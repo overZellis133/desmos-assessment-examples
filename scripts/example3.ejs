@@ -1,0 +1,77 @@
+<script>
+$(function() {
+
+  // Cache some collections
+  var $zeros = $('#zeros'),
+      $extrema = $('#extrema'),
+      $toggleDerivative = $('#toggle-derivative');
+
+  // Constructor options
+  var options = {
+    lockViewport: true,
+    expressions: false
+  };
+
+  // Create a calculator instance
+  var elt = $('#example3')[0];
+  var calc = Desmos.Calculator(elt, options);
+
+  var derivativeHidden = true;
+
+  // Set the initial calculator state
+  calc.setExpressions([
+    {
+      id: 'quartic',
+      latex: 'f(x) = x^4 - 4x^2',
+      color: Desmos.Colors.BLUE
+    },
+    {
+      id: 'derivative',
+      latex: 'f\'(x)',
+      color: Desmos.Colors.PURPLE,
+      hidden: true
+    }
+  ]);
+
+  // Draw the student response about zeros to the graph
+  function updateZeros() {
+    var inputs = $zeros.val().split(',');
+    inputs.forEach(function(elt, ind) {
+      if (!isNaN(elt) && isFinite(elt)) {
+        calc.setExpression({
+          id: 'zero_' + ind,
+          latex: '(' + elt + ', 0)',
+          color: Desmos.Colors.RED
+        });
+      }
+    });
+  }
+  $zeros.keyup(updateZeros);
+
+  // Draw the student response about extrema to the graph
+  function updateExtrema() {
+    var inputs = $extrema.val().split(',');
+    inputs.forEach(function(elt, ind) {
+      if (!isNaN(elt) && isFinite(elt)) {
+        calc.setExpression({
+          id: 'extremum_' + ind,
+          latex: 'x = ' + elt,
+          color: Desmos.Colors.RED
+        });
+      }
+    });
+  }
+  $extrema.keyup(updateExtrema);
+
+  // Toggle the derivative to check the solution
+  $toggleDerivative.click(function() {
+    derivativeHidden = !derivativeHidden;
+    calc.setExpression({
+      id: 'derivative',
+      hidden: derivativeHidden
+    });
+  });
+
+
+});
+</script>

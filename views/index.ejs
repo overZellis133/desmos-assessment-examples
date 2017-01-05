@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Knewton FAQ</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/stylesheets/style.css">
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://www.desmos.com/api/v0.8/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
+  </head>
+  <body>
+    <div class="container">
+
+      <h1 class="title">Knewton FAQ</h1>
+      <hr>
+
+      <h4>1. Draw the graph of y = 2x + 1</h4>
+      <div id="example1" class="calculator"></div>
+      <h4 id="example1-feedback"></h4>
+      <hr>
+
+      <h4>2. Estimate the line of best fit for the scatterplot below. (Click any two points to create a line.)</h4>
+      <div id="example2" class="calculator"></div>
+      <button id="toggle-best-fit" class="btn btn-default">Toggle Best-Fit Line</button>
+      <button id="reset" class="btn btn-default">Reset</button>
+      <h4 id="example2-feedback"></h4>
+      <hr>
+
+      <h4>3. Answer the questions below to sketch the key points of the function's derivative.</h4>
+      <div id="example3" class="calculator"></div>
+      <form class="form-horizontal question-form">
+        <div class="form-group">
+          <label for="zeros">At approximately which <em>x</em>-values does the derivative have zeros?</label>
+          <input type="text" id="zeros" placeholder="e.g. -2, 1">
+        </div>
+        <div class="form-group">
+          <label for="extrema">At approximately which <em>x</em>-values does the derivative have extrema?</label>
+          <input type="text" id="extrema" placeholder="e.g. -2, 1">
+        </div>
+      </form>
+      <button id="toggle-derivative" class="btn btn-default">Toggle Derivative</button>
+      <hr>
+
+      <h4>Enter lists of <em>x</em>- and <em>y</em>-coordinates to generate a scatterplot and graph state.</h4>
+      <div id="example4"></div>
+      <form class="form-horizontal question-form">
+        <div class="form-group">
+          <label for="x_values">Enter a comma-separated list of <em>x</em>-values:</label>
+          <input type="text" id="x-values" placeholder="e.g. -2, 1">
+        </div>
+        <div class="form-group">
+          <label for="y-values">Enter a comma-separated list of <em>y</em>-values:</label>
+          <input type="text" id="y-values" placeholder="e.g. -2, 1">
+        </div>
+      </form>
+      <button id="generate-plot" class="btn btn-default">Generate Scatterplot Graph State</button>
+      <hr>
+
+      <h4>Export an image</h4>
+      <div id="example5" class="calculator"></div>
+      <button id="generate-image" class="btn btn-default">Generate Image</button>
+      <img id="thumbnail" src="">
+      <hr>
+
+    </div>
+
+    <!-- Example scripts -->
+    <% include ../scripts/example1 %>
+    <% include ../scripts/example2 %>
+    <% include ../scripts/example3 %>
+    <% include ../scripts/example4 %>
+    <% include ../scripts/example5 %>
+    <!--<script src="../scripts/example1.js" charset="utf-8"></script>-->
+    <!--<script src="../scripts/example2.js" charset="utf-8"></script>-->
+    <!--<script src="../scripts/example3.js" charset="utf-8"></script>-->
+    <!--<script src="../scripts/example4.js" charset="utf-8"></script>-->
+    <!--<script src="../scripts/example5.js" charset="utf-8"></script>-->
+  </body>
+</html>

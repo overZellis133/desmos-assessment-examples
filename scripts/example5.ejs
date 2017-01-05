@@ -1,0 +1,19 @@
+<script>
+$(function() {
+
+  // Cache some collections
+  var $thumb = $('#thumbnail'),
+      $generateImage = $('#generate-image');
+
+  // Create a calculator instance
+  var elt = $('#example5')[0];
+  var calc = Desmos.Calculator(elt);
+
+  // Get a screenshhot
+  function generateThumb() {
+    var thumb = calc.screenshot();
+    $thumb.attr('src', thumb); // display the image in our <img> element
+  }
+  $generateImage.click(generateThumb);
+});
+</script>

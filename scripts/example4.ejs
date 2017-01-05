@@ -1,0 +1,50 @@
+<script>
+$(function() {
+
+  // Cache some collections
+  var $xValues = $('#x-values'),
+      $yValues = $('#y-values'),
+      $generatePlot = $('#generate-plot');
+
+  // Create a calculator instance
+  var elt = $('#example4')[0];
+  var calc = Desmos.Calculator(elt, { border: false });
+
+  var tableColumns = [
+    { latex: 'x_1', values: [] },
+    { latex: 'y_1', values: [], color: Desmos.Colors.BLUE }
+  ];
+
+  function generatePlot() {
+    // Read the student inputs
+    var xValues = $xValues.val().split(','),
+        yValues = $yValues.val().split(',');
+
+    // Discard any bad values
+    var cleanX = [],
+        cleanY = [];
+    xValues.forEach(function(elt) {
+      if (!isNaN(elt) && isFinite(elt)) cleanX.push(elt);
+    });
+    yValues.forEach(function(elt) {
+      if (!isNaN(elt) && isFinite(elt)) cleanY.push(elt);
+    });
+
+    // Set the input values as a table expression in the calculator
+    tableColumns[0].values = cleanX;
+    tableColumns[1].values = cleanY;
+    calc.setExpression({
+      id: 'data',
+      type: 'table',
+      columns: tableColumns
+    });
+
+    // Give the calculator a bit of time to update its state
+    setTimeout(function() {
+      alert(JSON.stringify(calc.getState())); // grab a state snapshot
+    }, 200);
+  }
+  $generatePlot.click(generatePlot);
+
+});
+</script>

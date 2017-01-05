@@ -1,0 +1,61 @@
+<script>
+$(function() {
+
+  // Create a calculator instance
+  var elt = $('#example1')[0];
+  var calc = Desmos.Calculator(elt, { expressions: false });
+
+  // We'll give some feedback based on whether the line matches the equation
+  var $feedback = $('#example1-feedback');
+  var messages = {
+    yup: 'Nice work!',
+    nope: 'Keep trying...'
+  };
+
+  var sliderBounds = { min: -10, max: 10, step: 0.5 };
+
+  // Since this is a relatively simple construction, we'll just create the
+  // expressions dynamically instead of loading in a saved state
+  var expressions = [
+    { id: 'x_1_slider', latex: 'x_1 = -2', sliderBounds: sliderBounds },
+    { id: 'y_1_slider', latex: 'y_1 = -1', sliderBounds: sliderBounds },
+    { id: 'x_2_slider', latex: 'x_2 = 2', sliderBounds: sliderBounds },
+    { id: 'y_2_slider', latex: 'y_2 = -3', sliderBounds, sliderBounds },
+    { id: 'slope', latex: 'm = (y_2 - y_1) / (x_2 - x_1)'},
+    { id: 'y_intercept', latex: 'b = y_1 - m * x_1' },
+    { id: 'point1', latex: '(x_1, y_1)', color: Desmos.Colors.BLUE },
+    { id: 'point2', latex: '(x_2, y_2)', color: Desmos.Colors.RED },
+    { id: 'line', latex: 'y = mx + b', color: Desmos.Colors.PURPLE }
+  ];
+
+  // Set up the calculator initially
+  calc.setExpressions(expressions);
+
+  // Create some helper expressions to watch the two parameters we care about.
+  // We can use those to check whether the student's solution matches the equation.
+  var slope = calc.HelperExpression({ latex: 'm' });
+  var intercept = calc.HelperExpression({ latex: 'b' });
+  slope.observe('numericValue', checkSolution);
+  intercept.observe('numericValue', checkSolution);
+
+  // Check the solution and broadcast the results
+  function checkSolution() {
+    updateFeedback(doParametersMatch(slope.numericValue, intercept.numericValue));
+  }
+
+  // Are the slope and intercept sufficiently close to 2 and 1, respectively?
+  function doParametersMatch(m, b) {
+    var epsilon = 0.01;
+    return (Math.abs(m - 2) < epsilon && (Math.abs(b - 1) < epsilon));
+  };
+
+  // Send the feedback to the student
+  function updateFeedback(correct) {
+    $feedback
+      .text(correct ? messages.yup : messages.nope)
+      .toggleClass('text-danger', !correct)
+      .toggleClass('text-success', correct);
+  };
+
+});
+</script>

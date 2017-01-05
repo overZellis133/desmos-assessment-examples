@@ -1,0 +1,206 @@
+<script>
+$(function() {
+
+  // Cache some collections
+  var $toggleBestFit = $('#toggle-best-fit'),
+      $feedback = $('#example2-feedback'),
+      $reset = $('#reset');
+
+  var regressionHidden = true;
+
+  // We'll lock down the calculator a little bit so that the viewport
+  // looks clean and always fits the data nicely.
+  var options = {
+    expressionsCollapsed: true,
+    lockViewport: true,
+    zoomButtons: false,
+    settingsMenu: false
+  };
+
+  // Keep track of points the student has added
+  var studentPoints = [];
+
+  // Keep a reference to some expression ids so we can reset things
+  var expressions = [
+    { id: 'point_0' },
+    { id: 'point_1' },
+    { id: 'student_line' },
+    { id: 'student_SSE' }
+  ];
+
+  // Create a calculator instance
+  var $elt = $('#example2');
+  var calc = Desmos.Calculator($elt[0], options);
+
+  // Sample data for the scatterplot. Putting it in a table makes our lives a
+  // little easier, especially when we want a regression.
+  var tableColumns = [
+    {
+      latex: 'x_1',
+      values: [14.2, 16.4, 11.9, 15.2, 18.5, 22.1, 19.4, 25.1, 23.4, 18.1, 22.6, 18.2]
+    },
+    {
+      latex: 'y_1',
+      values: [215, 325, 185, 332, 406, 522, 412, 614, 544, 421, 445, 408],
+      color: Desmos.Colors.BLUE
+    }
+  ];
+
+  // Make sure that the viewport scales nicely so that we see the origin
+  // and all of the data with a bit of a margin.
+  function getReasonableViewportBounds() {
+    var xValues = tableColumns[0].values,
+        yValues = tableColumns[1].values;
+
+    var xMax = Math.max.apply(null, xValues),
+        yMax = Math.max.apply(null, yValues);
+
+    var scaleFactor = 0.15;
+
+    var xMargin = xMax * scaleFactor,
+        yMargin = yMax * scaleFactor;
+
+    return [
+      -xMargin,
+      xMax + xMargin,
+      -yMargin,
+      yMax + yMargin
+    ];
+
+  }
+
+  // Set up the calculator initially
+  calc.setExpression({ type: 'table', columns: tableColumns });
+  calc.setViewport(getReasonableViewportBounds());
+
+  // Perform a linear regression to get the line of best fit. We can use this both
+  // to show the best-fit line as a comparison to the student's work, and to calculate
+  // the student's line's relative goodness-of-fit numerically.
+  calc.setExpressions([
+    {
+      id: 'regression',
+      latex: 'y_1 ~ a_rx_1 + b_r',
+      hidden: true
+    },
+    {
+      id: 'regression_model',
+      latex: 'f(x) = a_rx + b_r',
+      color: Desmos.Colors.PURPLE,
+      hidden: true
+    },
+    {
+      id: 'regression-SSE',
+      latex: 'S_r = total((y_1 - f(x_1))^2 / (var(y_1)))'
+    }
+  ]);
+
+  // We'll keep track of the weighted SSE for the regression model and the student
+  // model for scoring purposes. The regression model obviously minimizes SSE, so
+  // the lower the value of studentSSE, the better the student's estimate.  How you
+  // might want to set thresholds for scoring is up to you.
+  var regressionSSE,
+      studentSSE;
+
+  // Snag the weighted SSE for the regression model
+  var regressionHelper = calc.HelperExpression({ latex: 'S_r' });
+  regressionHelper.observe('numericValue', function() {
+    regressionSSE = regressionHelper.numericValue;
+  });
+
+  // Snag the weighted SSE for the student's estimate
+  var studentHelper = calc.HelperExpression({ latex:  'S_s' });
+  studentHelper.observe('numericValue', function() {
+    studentSSE = studentHelper.numericValue;
+  });
+
+
+  // Have the student create a line by clicking two points on the calculator.
+  $elt.click(function(evt) {
+    // Get the mouse coordinates of the click relative to the calculator's parent
+    var x = evt.pageX - $elt.offset().left,
+        y = evt.pageY - $elt.offset().top;
+
+    // Convert the mouse coordinates to Cartesian coordinates on the graphpaper
+    var mathCoordinates = calc.pixelsToMath({ x: x, y: y });
+    var mathX = mathCoordinates.x,
+        mathY = mathCoordinates.y;
+
+    var numStudentPoints = studentPoints.length;
+
+    // Create two points based on the mouse clicks and connect them with a line
+    if (numStudentPoints < 2) {
+      calc.setExpression({
+        id: 'point_' + numStudentPoints,
+        latex: '(' + mathX + ',' + mathY+ ')',
+        color: Desmos.Colors.RED
+       });
+       studentPoints.push({ x: mathX, y: mathY });
+    }
+    if (numStudentPoints === 1) {
+      var x1 = studentPoints[0].x,
+          y1 = studentPoints[0].y;
+
+      var m = (y1 - mathY) / (x1 - mathX),
+          b = y1 - m * x1;
+      calc.setExpressions([
+        {
+          id: 'student_line',
+          latex: 'g(x) = ' + m + 'x + ' + b,
+          color: Desmos.Colors.RED
+        },
+        {
+          id: 'student_SSE',
+          latex: 'S_s = total((y_1 - g(x_1))^2 / (var(y_1)))'
+        }
+      ]);
+    }
+
+    // Give the HelperExpression a little time to update
+    setTimeout(updateFeedback, 100);
+
+  });
+
+  // Update the message the student sees
+  function updateFeedback() {
+    var message,
+        numStudentPoints = studentPoints.length;
+
+    switch (numStudentPoints) {
+      case 1:
+        message = 'You still need to add a point.';
+        break;
+      case 2:
+        message = getEstimateMessage();
+        break;
+      default:
+        message = 'Click to add two points for your line.';
+    }
+
+    $feedback.text(message);
+  }
+  updateFeedback();
+
+  function getEstimateMessage() {
+    var regression = regressionSSE.toFixed(2);
+    var student = studentSSE.toFixed(2);
+    return 'Best-fit weighted SSE: ' + regression + '. Your weighted SSE: ' + student;
+  }
+
+  // Show the best fit line from the regression
+  function toggleBestFit() {
+    regressionHidden = !regressionHidden;
+    calc.setExpression({ id: 'regression_model', hidden: regressionHidden });
+  }
+  $toggleBestFit.click(toggleBestFit);
+
+  // Reset the question
+  function reset() {
+    calc.removeExpressions(expressions);
+    studentPoints = [];
+    if (!regressionHidden) toggleBestFit();
+    updateFeedback();
+  }
+  $reset.click(reset);
+
+});
+</script>
