@@ -47,7 +47,7 @@
   
     function init () {
       var elt = document.getElementById('randomline');
-      calculator = Desmos.GraphingCalculator(elt);
+      calculator = Desmos.GraphingCalculator(elt, {expressions: false});
       next();
     
       document.getElementById("btnNext").addEventListener('click', next);
