@@ -1,0 +1,58 @@
+<script>
+  (function () {
+    "use strict";
+    
+    var calculator;
+  
+    function between (a, b) {
+      var range = b - a + 1;
+      return a + Math.floor(Math.random() * range);
+    }
+  
+    function getPoints () {
+      return [
+        { x: 0, y: between(-4, 4) },
+        { x: 1, y: between(-5, 5) }
+      ];
+    }
+    
+    function getGradient (points) {
+      return (points[1].y - points[0].y) / (points[1].x - points[0].x);
+    }
+  
+    function pointString (point) {
+      return '(' + point.x + ', ' + point.y + ')';
+    }
+  
+    function lineString (points) {
+      var line = "y = ";
+      var gradient = getGradient(points);
+      line += gradient + 'x+';
+      line += points[0].y;
+  
+      return line;
+    }
+  
+    function showLine (points) {
+      points.forEach(function (point, i) {
+        calculator.setExpression({id: 'p' + i, latex: pointString(point)});
+      });
+  
+      calculator.setExpression({id:'line', latex: lineString(points)});
+    }
+  
+    function next () {
+      showLine(getPoints());
+    }
+  
+    function init () {
+      var elt = document.getElementById('randomline');
+      calculator = Desmos.GraphingCalculator(elt);
+      next();
+    
+      document.getElementById("btnNext").addEventListener('click', next);
+    }
+    
+    init();
+  })();
+</script>
