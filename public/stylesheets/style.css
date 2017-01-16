@@ -7,6 +7,18 @@ h1.title {
   height: 500px;
 }
 
+.graded, .feedback {
+  float: left;
+}
+
+.graded {
+  margin-right: 225px;
+}
+
+.clearfix {
+  clear:both;
+}
+
 .question-form {
   margin: 10px 0 0 20px;
 }

@@ -1,0 +1,125 @@
+<script>
+  var $feedback = $('h4.example7-feedback');
+  var messages = {
+    yup: 'Nice work!',
+    nope: 'Keep trying...'
+  }; 
+            
+  var $slope = $("span.target-slope");
+  var $intercept = $("span.target-intercept");
+      
+  (function() {
+    "use strict";
+    
+    var calculator;
+    var target;
+    
+    function between(a, b) {
+      var range = Math.max(a, b) - Math.min(a, b);
+      return Math.floor(Math.random() * (range + 1)) + Math.min(a,b);
+    }
+    // generate the values for x1, y1, x2, y2
+    function getPoints() {
+      var x_1 = between(-5,5);
+      var y_1 = between(-5,5);
+      var x_2 = between(-5,5);
+      var y_2 = between(-5,5);
+      
+      return [
+        {x: x_1, y: y_1},
+        {x: x_2, y: y_2}
+        ];
+    }
+    
+    function targetLine() {
+      return {
+        m: between(-5,5),
+        intercept: between(-5,5)
+      };
+    }
+    
+    function expressionList(points) {
+      // var sliderBounds = { min: -10, max: 10, step: 0.5 };
+      
+      points.forEach(function(point, i){
+        calculator.setExpression({id: "x_" + (i+1) + "_slider", latex: "x_" + (i+1) + " = " + point.x});
+      });
+      points.forEach(function(point, i){
+        calculator.setExpression({id: "y_" + (i+1) + "_slider", latex: "y_" + (i+1) + " = " + point.y});
+      });
+      
+      var expressions = [
+        {id: "line", latex: "y = mx + b", color: Desmos.Colors.PURPLE},
+        {id: "slope", latex: "m = (y_2 - y_1) / (x_2 - x_1)"},
+        {id: "y_intercept", latex: "b = y_1 - m * x_1"},
+        {id: "point_1", latex: "(x_1, y_1)"},
+        {id: "point_2", latex: "(x_2, y_2)"}
+      ];
+      
+      calculator.setExpressions(expressions);
+    }
+    
+    function next() {
+      expressionList(getPoints());
+      target = targetLine();
+      
+      if (target.m === 1) {
+        $slope.text("x "); 
+      } else if (target.m === -1) {
+        $slope.text("-x ");
+      } else if (target.m > 0) {
+       $slope.text(target.m + "x "); 
+      } else if (target.m < 0) {
+        $slope.text(target.m + "x "); 
+      } else {
+        $slope.text("");
+      }
+      if (target.intercept > 0 && target.m === 0) {
+        $intercept.text("" + target.intercept);
+      } else if (target.intercept > 0) {
+        $intercept.text("+ " + target.intercept);
+      } else if (target.intercept < 0) {
+        $intercept.text("- " + Math.abs(target.intercept));
+      } else {
+        $intercept.text("");
+      }
+    }
+    
+    function init() {
+      var elt = document.getElementById("randomlinegraded");
+      calculator = Desmos.GraphingCalculator(elt, {expressions: false});
+      next();
+      
+      document.getElementById("btnNextgraded").addEventListener("click", next);
+    }
+    
+    init();
+     
+    // Create some helper expressions to watch the two parameters we care about.
+      // We can use those to check whether the student's solution matches the equation.
+      var slope = calculator.HelperExpression({ latex: 'm' });
+      var intercept = calculator.HelperExpression({ latex: 'b' });
+      slope.observe('numericValue', checkSolution);
+      intercept.observe('numericValue', checkSolution);
+    
+      // Check the solution and broadcast the results
+      function checkSolution() {
+        updateFeedback(doParametersMatch(slope.numericValue, intercept.numericValue));
+      }
+    
+      // Are the slope and intercept sufficiently close to 2 and 1, respectively?
+      function doParametersMatch(m, b) {
+        var epsilon = 0.1;
+        return (Math.abs(m - target.m) < epsilon && (Math.abs(b - target.intercept) < epsilon));
+      }
+    
+      // Send the feedback to the student
+      function updateFeedback(correct) {
+        $feedback
+          .text(correct ? messages.yup : messages.nope)
+          .toggleClass('text-danger', !correct)
+          .toggleClass('text-success', correct);
+      }
+    
+  })();
+</script>
