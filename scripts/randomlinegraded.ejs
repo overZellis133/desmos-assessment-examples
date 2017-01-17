@@ -76,6 +76,8 @@
       }
       if (target.intercept > 0 && target.m === 0) {
         $intercept.text("" + target.intercept);
+      } else if (target.intercept === 0 && target.m === 0) {
+        $intercept.text("0");
       } else if (target.intercept > 0) {
         $intercept.text("+ " + target.intercept);
       } else if (target.intercept < 0) {
