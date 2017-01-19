@@ -18,6 +18,7 @@
       var range = Math.max(a, b) - Math.min(a, b);
       return Math.floor(Math.random() * (range + 1)) + Math.min(a,b);
     }
+    
     // generate the values for x1, y1, x2, y2
     function getPoints() {
       var x_1 = between(-5,5);
@@ -39,15 +40,8 @@
     }
     
     function expressionList(points) {
-      // var sliderBounds = { min: -10, max: 10, step: 0.5 };
-      
-      points.forEach(function(point, i){
-        calculator.setExpression({id: "x_" + (i+1) + "_slider", latex: "x_" + (i+1) + " = " + point.x});
-      });
-      points.forEach(function(point, i){
-        calculator.setExpression({id: "y_" + (i+1) + "_slider", latex: "y_" + (i+1) + " = " + point.y});
-      });
-      
+      calculator.setBlank();
+      var sliderBounds = { min: -10, max: 10, step: 0.5 };
       var expressions = [
         {id: "line", latex: "y = mx + b", color: Desmos.Colors.PURPLE},
         {id: "slope", latex: "m = (y_2 - y_1) / (x_2 - x_1)"},
@@ -56,7 +50,40 @@
         {id: "point_2", latex: "(x_2, y_2)"}
       ];
       
+      points.forEach(function(point, i){
+        expressions.unshift({id: "x_" + (i+1) + "_slider", latex: "x_" + (i+1) + " = " + point.x, sliderBounds: sliderBounds});
+      });
+      points.forEach(function(point, i){
+        expressions.unshift({id: "y_" + (i+1) + "_slider", latex: "y_" + (i+1) + " = " + point.y, sliderBounds: sliderBounds});
+      });
+      
       calculator.setExpressions(expressions);
+      
+      // Create some helper expressions to watch the two parameters we care about.
+      // We can use those to check whether the student's solution matches the equation.
+      var slope = calculator.HelperExpression({ latex: 'm' });
+      var intercept = calculator.HelperExpression({ latex: 'b' });
+      slope.observe('numericValue', checkSolution);
+      intercept.observe('numericValue', checkSolution);
+    
+      // Check the solution and broadcast the results
+      function checkSolution() {
+        updateFeedback(doParametersMatch(slope.numericValue, intercept.numericValue));
+      }
+    
+      // Are the slope and intercept sufficiently close to 2 and 1, respectively?
+      function doParametersMatch(m, b) {
+        var epsilon = 0.1;
+        return (Math.abs(m - target.m) < epsilon && (Math.abs(b - target.intercept) < epsilon));
+      }
+    
+      // Send the feedback to the student
+      function updateFeedback(correct) {
+        $feedback
+          .text(correct ? messages.yup : messages.nope)
+          .toggleClass('text-danger', !correct)
+          .toggleClass('text-success', correct);
+      }
     }
     
     function next() {
@@ -96,32 +123,6 @@
     }
     
     init();
-     
-    // Create some helper expressions to watch the two parameters we care about.
-      // We can use those to check whether the student's solution matches the equation.
-      var slope = calculator.HelperExpression({ latex: 'm' });
-      var intercept = calculator.HelperExpression({ latex: 'b' });
-      slope.observe('numericValue', checkSolution);
-      intercept.observe('numericValue', checkSolution);
-    
-      // Check the solution and broadcast the results
-      function checkSolution() {
-        updateFeedback(doParametersMatch(slope.numericValue, intercept.numericValue));
-      }
-    
-      // Are the slope and intercept sufficiently close to 2 and 1, respectively?
-      function doParametersMatch(m, b) {
-        var epsilon = 0.1;
-        return (Math.abs(m - target.m) < epsilon && (Math.abs(b - target.intercept) < epsilon));
-      }
-    
-      // Send the feedback to the student
-      function updateFeedback(correct) {
-        $feedback
-          .text(correct ? messages.yup : messages.nope)
-          .toggleClass('text-danger', !correct)
-          .toggleClass('text-success', correct);
-      }
-    
+  
   })();
 </script>
