@@ -73,7 +73,7 @@
     
       // Are the slope and intercept sufficiently close to 2 and 1, respectively?
       function doParametersMatch(m, b) {
-        var epsilon = 0.1;
+        var epsilon = 0.01;
         return (Math.abs(m - target.m) < epsilon && (Math.abs(b - target.intercept) < epsilon));
       }
     
