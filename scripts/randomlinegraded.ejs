@@ -68,8 +68,8 @@
       
       // Create some helper expressions to watch the two parameters we care about.
       // We can use those to check whether the student's solution matches the equation.
-      var slope = calculator.HelperExpression({ latex: 'm' });
-      var intercept = calculator.HelperExpression({ latex: 'b' });
+      slope = calculator.HelperExpression({ latex: 'm' });
+      intercept = calculator.HelperExpression({ latex: 'b' });
       slope.observe('numericValue', checkSolution);
       intercept.observe('numericValue', checkSolution);
     
