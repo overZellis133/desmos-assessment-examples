@@ -21,10 +21,15 @@
     
     // generate the values for x1, y1, x2, y2
     function getPoints() {
+      
       var x_1 = between(-5,5);
-      var y_1 = between(-5,5);
       var x_2 = between(-5,5);
+      var y_1 = between(-5,5);
       var y_2 = between(-5,5);
+      
+      while (x_1 === x_2) {
+        x_2 = between(-5,5);
+      }
       
       return [
         {x: x_1, y: y_1},
@@ -89,6 +94,10 @@
     function next() {
       expressionList(getPoints());
       target = targetLine();
+      
+      while (target.m === slope.numericValue && target.intercept === intercept.numericValue) {
+        target = targetLine();
+      }
       
       if (target.m === 1) {
         $slope.text("x "); 
