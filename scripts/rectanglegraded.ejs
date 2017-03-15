@@ -1,0 +1,126 @@
+<script>
+$(function() {
+    
+    var elt = document.getElementById("rectanglegraded");
+    var graphSettings = {
+            expressions: false,
+            lockViewport: true,
+            settingsMenu: false,
+            zoomButtons: false
+        };
+    var calculator = Desmos.GraphingCalculator(elt, graphSettings);
+    
+    var $rectangle_feedback = $('#rectangle-feedback');
+    var messages = {
+        yup: 'Nice work!',
+        nope: 'Keep trying...'
+    }; 
+    
+    var sliderBounds = { min: -10, max: 10, step: 1 };
+    
+    calculator.setExpressions([
+        {
+            type: 'table',
+            columns: [
+                {
+                    latex: 'x_1',
+                    values: ['a', 'c', 'c', 'a', 'a']
+                },
+                {
+                    latex: 'y_1',
+                    values: ['b', 'b', 'd', 'd', 'b'],
+                    columnMode: Desmos.ColumnModes.LINES
+                }
+            ]
+        },
+        {
+            id: 'a-slider',
+            latex: 'a=0',
+            sliderBounds: sliderBounds
+        },
+        {
+            id: 'b-slider',
+            latex: 'b=3',
+            sliderBounds: sliderBounds
+        },
+        {
+            id: 'c-slider',
+            latex: 'c=-5',
+            sliderBounds: sliderBounds
+        },
+        {
+            id: 'd-slider',
+            latex: 'd=0',
+            sliderBounds: sliderBounds
+        },
+        {
+            id: 'bottom_left_point',
+            latex: '(c,d)'
+        },
+        {
+            id: 'top_right_point',
+            latex: '(a,b)'
+        },
+        {
+            id: 'P',
+            latex: 'P=2\\left|c-a\\right|+2\\left|d-b\\right|'
+        },
+        {
+            id: 'A',
+            latex: 'A=\\left|c-a\\right|\\left|d-b\\right|'
+        }
+    ]);
+    
+    calculator.updateSettings({
+        showXAxis: false,
+        showYAxis: false,
+        xAxisNumbers: false,
+        yAxisNumbers: false,
+        xAxisMinorSubdivisions: 1,
+        yAxisMinorSubdivisions: 1,
+        xAxisStep: 1,
+        yAxisStep: 1
+    });
+    
+    var perimeter = calculator.HelperExpression({ latex: 'P'}),
+        area = calculator.HelperExpression({ latex: 'A'}),
+        a = calculator.HelperExpression({ latex: 'a'}),
+        b = calculator.HelperExpression({ latex: 'b'}),
+        c = calculator.HelperExpression({ latex: 'c'}),
+        d = calculator.HelperExpression({ latex: 'd'});
+        
+    perimeter.observe('numericValue', checkSolution);
+    area.observe('numericValue', checkSolution);
+        
+    // Check the solution and broadcast the results
+    function checkSolution() {
+        updateFeedback(doParametersMatch(perimeter.numericValue, area.numericValue));
+    };
+    
+    // Are the perimeter and area sufficiently close to 16 and 15, respectively?
+    function doParametersMatch(P, A) {
+        var epsilon = 0.01;
+        return (Math.abs(P - 26) < epsilon && (Math.abs(A - 36) < epsilon));
+    };
+    
+    // Send the feedback to the student
+    function updateFeedback(correct) {
+        $rectangle_feedback
+            .text(correct ? messages.yup : messages.nope)
+            .toggleClass('text-danger', !correct)
+            .toggleClass('text-success', correct);
+    };
+    // c.observe('numericValue');
+    // console.log(c.numericValue - 3);
+    //   console.log(a.observe('numericValue', function() {a.numericValue + 3}))
+    //   console.log(d.observe('numericValue', function() {d.numericValue - 3}))
+    //   console.log(b.observe('numericValue', function() {b.numericValue + 3}))
+    
+    // calculator.setMathBounds({
+    //   left: c.numericValue - 3,
+    //   right: a.numericValue + 3,
+    //   bottom: d.numericValue - 3,
+    //   top: b.numericValue + 3
+    // });
+});
+</script>
