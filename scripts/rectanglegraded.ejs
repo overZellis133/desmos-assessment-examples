@@ -10,15 +10,26 @@ $(function() {
         };
     var calculator = Desmos.GraphingCalculator(elt, graphSettings);
     
-    var $rectangle_feedback = $('#rectangle-feedback');
+    var $perimeter_feedback = $('#perimeter-feedback'),
+        $area_feedback = $('#area-feedback'),
+        $submit = $('#submit'),
+        $reset = $('#reset-rectangle'),
+        $feedback_table = document.getElementById('rectangle-feedback-table');
+    
     var messages = {
         yup: 'Nice work!',
-        nope: 'Keep trying...'
+        nope: {
+            high: 'Too High...',
+            low: 'Too Low...'
+        }
     }; 
+    
+    // Keep track of number of submits and Perimeter & Area feedback
+    var attempts = [];
     
     var sliderBounds = { min: -10, max: 10, step: 1 };
     
-    calculator.setExpressions([
+    var initialExpressions = [
         {
             type: 'table',
             columns: [
@@ -69,9 +80,11 @@ $(function() {
             id: 'A',
             latex: 'A=\\left|c-a\\right|\\left|d-b\\right|'
         }
-    ]);
+    ];
     
-    calculator.updateSettings({
+    calculator.setExpressions(initialExpressions);
+    
+    var initialSettings = {
         showXAxis: false,
         showYAxis: false,
         xAxisNumbers: false,
@@ -80,47 +93,129 @@ $(function() {
         yAxisMinorSubdivisions: 1,
         xAxisStep: 1,
         yAxisStep: 1
-    });
+    }
+    
+    calculator.updateSettings(initialSettings);
     
     var perimeter = calculator.HelperExpression({ latex: 'P'}),
-        area = calculator.HelperExpression({ latex: 'A'}),
-        a = calculator.HelperExpression({ latex: 'a'}),
-        b = calculator.HelperExpression({ latex: 'b'}),
-        c = calculator.HelperExpression({ latex: 'c'}),
-        d = calculator.HelperExpression({ latex: 'd'});
-        
-    perimeter.observe('numericValue', checkSolution);
-    area.observe('numericValue', checkSolution);
+             area = calculator.HelperExpression({ latex: 'A'});
+    
+    function setupHelperExpressions() {
+        perimeter = calculator.HelperExpression({ latex: 'P'});
+        area = calculator.HelperExpression({ latex: 'A'});
+        var a = calculator.HelperExpression({ latex: 'a'}),
+            b = calculator.HelperExpression({ latex: 'b'}),
+            c = calculator.HelperExpression({ latex: 'c'}),
+            d = calculator.HelperExpression({ latex: 'd'});
+    }
+    setupHelperExpressions();
         
     // Check the solution and broadcast the results
     function checkSolution() {
         updateFeedback(doParametersMatch(perimeter.numericValue, area.numericValue));
     };
     
-    // Are the perimeter and area sufficiently close to 16 and 15, respectively?
+    // Are the perimeter and area sufficiently close to 26 and 36, respectively?
     function doParametersMatch(P, A) {
         var epsilon = 0.01;
-        return (Math.abs(P - 26) < epsilon && (Math.abs(A - 36) < epsilon));
+        var perimeterStatus,
+            areaStatus;
+            
+        if (Math.abs(P - 26) < epsilon) {
+            perimeterStatus = "correct";
+        } else if (Math.abs(P) - 26 > epsilon) {
+            perimeterStatus = "high";
+        } else {
+            perimeterStatus = "low";
+        }
+        
+        if (Math.abs(A - 36) < epsilon) {
+            areaStatus = "correct";
+        } else if (Math.abs(A) - 36 > epsilon) {
+            areaStatus = "high";
+        } else {
+            areaStatus = "low";
+        }
+        // return perimeter, area
+        return ([perimeterStatus, areaStatus]);
     };
     
     // Send the feedback to the student
     function updateFeedback(correct) {
-        $rectangle_feedback
-            .text(correct ? messages.yup : messages.nope)
-            .toggleClass('text-danger', !correct)
-            .toggleClass('text-success', correct);
-    };
-    // c.observe('numericValue');
-    // console.log(c.numericValue - 3);
-    //   console.log(a.observe('numericValue', function() {a.numericValue + 3}))
-    //   console.log(d.observe('numericValue', function() {d.numericValue - 3}))
-    //   console.log(b.observe('numericValue', function() {b.numericValue + 3}))
+        if (attempts.length === 0) {
+        }
+       if (attempts.length > 0) {
+           var perimeterId = '#perimeter-feedback' + attempts.length;
+           var areaId = '#area-feedback' + attempts.length;
+           $perimeter_feedback = $(perimeterId);
+           $area_feedback = $(areaId);
+       }
+       $perimeter_feedback
+           .text(function() {
+               if (correct[0] === "correct") {
+                   return messages.yup;
+               } else if (correct[0] === "high") {
+                   return messages.nope.high;
+               } else {
+                   return messages.nope.low;
+               }
+           })
+           .toggleClass('text-danger', correct[0] !== "correct")
+           .toggleClass('text-success', correct[0] === "correct");
+       $area_feedback
+           .text(function() {
+               if (correct[1] === "correct") {
+                   return messages.yup;
+               } else if (correct[1] === "high") {
+                   return messages.nope.high;
+               } else {
+                   return messages.nope.low;
+               }
+           })
+           .toggleClass('text-danger', correct[1] !== "correct")
+           .toggleClass('text-success', correct[1] === "correct");
+    }
     
-    // calculator.setMathBounds({
-    //   left: c.numericValue - 3,
-    //   right: a.numericValue + 3,
-    //   bottom: d.numericValue - 3,
-    //   top: b.numericValue + 3
-    // });
+    function clearFeedback() {
+        $feedback_table.style.display = "none";
+    }
+    
+    function displayFeedback() {
+        $feedback_table.style.display = "block";
+    }
+    
+    var submitCount = 0;
+    
+    function submit() {
+        submitCount += 1;
+        attempts.push({
+           perimeter: "too high",
+           area: "too low"
+        });
+        var perimeterId = "perimeter-feedback" + attempts.length;
+        var areaId = "area-feedback" + attempts.length;
+        
+        $('#feedback-table > tbody:last-child').append(
+            '<tr><th><h4>' + attempts.length + '</h4></th><td><h4 id=' + perimeterId + '></h4></td><td><h4 id=' + areaId + '><h4></td></tr>');
+        checkSolution();
+        displayFeedback();
+    }
+    $submit.click(submit);
+    
+    function reset() {
+        clearFeedback();
+        while (submitCount > 0) {
+            $('#feedback-table > tbody:last-child').remove();
+            submitCount -= 1;
+        }
+        $('#feedback-table').append('<tbody></tbody>');
+        attempts = [];
+        calculator.setBlank();
+        calculator.setExpressions(initialExpressions);
+        calculator.updateSettings(initialSettings);
+        setupHelperExpressions();
+    }
+    $reset.click(reset);
+    
 });
 </script>

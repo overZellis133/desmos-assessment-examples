@@ -22,3 +22,14 @@ h1.title {
 .question-form {
   margin: 10px 0 0 20px;
 }
+
+#rectanglegraded {
+  width: 700px;
+}
+
+#rectangle-feedback-table {
+  width: 400px;
+  height: 450px;
+  overflow: auto;
+  display: none;
+}
