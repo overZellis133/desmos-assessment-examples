@@ -13,6 +13,7 @@ $(function() {
     var $perimeter_feedback = $('#perimeter-feedback'),
         $area_feedback = $('#area-feedback'),
         $submit = $('#submit'),
+        submitCount = 0,
         $reset = $('#reset-rectangle'),
         $feedback_table = document.getElementById('rectangle-feedback-table');
     
@@ -23,9 +24,6 @@ $(function() {
             low: 'Too Low...'
         }
     }; 
-    
-    // Keep track of number of submits and Perimeter & Area feedback
-    var attempts = [];
     
     var sliderBounds = { min: -10, max: 10, step: 1 };
     
@@ -142,14 +140,12 @@ $(function() {
     
     // Send the feedback to the student
     function updateFeedback(correct) {
-        if (attempts.length === 0) {
-        }
-       if (attempts.length > 0) {
-           var perimeterId = '#perimeter-feedback' + attempts.length;
-           var areaId = '#area-feedback' + attempts.length;
-           $perimeter_feedback = $(perimeterId);
-           $area_feedback = $(areaId);
-       }
+       var perimeterId = '#perimeter-feedback' + submitCount;
+       var areaId = '#area-feedback' + submitCount;
+           
+       $perimeter_feedback = $(perimeterId);
+       $area_feedback = $(areaId);
+    
        $perimeter_feedback
            .text(function() {
                if (correct[0] === "correct") {
@@ -176,27 +172,24 @@ $(function() {
            .toggleClass('text-success', correct[1] === "correct");
     }
     
+    // Hide the Feedback Table
     function clearFeedback() {
         $feedback_table.style.display = "none";
     }
     
+    // Show the Feedback Taable
     function displayFeedback() {
         $feedback_table.style.display = "block";
     }
     
-    var submitCount = 0;
-    
     function submit() {
         submitCount += 1;
-        attempts.push({
-           perimeter: "too high",
-           area: "too low"
-        });
-        var perimeterId = "perimeter-feedback" + attempts.length;
-        var areaId = "area-feedback" + attempts.length;
+
+        var perimeterId = "perimeter-feedback" + submitCount;
+        var areaId = "area-feedback" + submitCount;
         
         $('#feedback-table > tbody:last-child').append(
-            '<tr><th><h4>' + attempts.length + '</h4></th><td><h4 id=' + perimeterId + '></h4></td><td><h4 id=' + areaId + '><h4></td></tr>');
+            '<tr><th><h4>' + submitCount + '</h4></th><td><h4 id=' + perimeterId + '></h4></td><td><h4 id=' + areaId + '><h4></td></tr>');
         checkSolution();
         displayFeedback();
     }
@@ -209,7 +202,6 @@ $(function() {
             submitCount -= 1;
         }
         $('#feedback-table').append('<tbody></tbody>');
-        attempts = [];
         calculator.setBlank();
         calculator.setExpressions(initialExpressions);
         calculator.updateSettings(initialSettings);
